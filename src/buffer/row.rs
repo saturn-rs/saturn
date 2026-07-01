@@ -1,4 +1,5 @@
 /// Defines single row in a buffer
+#[derive(Debug)]
 pub struct Row {
     /// Row index
     idx: usize,
@@ -18,7 +19,7 @@ impl Row {
     pub fn drop_first(&self, n: usize) -> Self {
         Self {
             idx: self.idx,
-            text: self.text[n.saturating_sub(1)..self.text.len()].to_string(),
+            text: self.text[n..self.text.len()].to_string(),
         }
     }
 
@@ -46,5 +47,10 @@ impl Row {
     /// Returns row index
     pub fn idx(&self) -> usize {
         self.idx
+    }
+
+    /// Returns row text
+    pub fn text(&self) -> &str {
+        &self.text
     }
 }

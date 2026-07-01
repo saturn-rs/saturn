@@ -69,7 +69,7 @@ impl Editor {
         let mut render_buf = String::new();
 
         // Getting rows by offset, width an height
-        let rows = self.buf.rows(offset, width, height);
+        let rows = self.buf.rows(self.offset, width as usize, height as usize);
 
         render_buf
     }
@@ -94,7 +94,7 @@ impl Widget for &mut Editor {
         .split(area);
 
         // Rendering code widget
-        Paragraph::new(self.render_text_area())
+        Paragraph::new(self.render_text_area(layout[0].width, layout[0].height))
             .block(
                 Block::bordered()
                     .border_style(Style::new().cyan())

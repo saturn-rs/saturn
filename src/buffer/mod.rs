@@ -1,11 +1,14 @@
 /// Modules
 mod row;
+#[cfg(test)]
+mod tests;
 
 /// Imports
 use crate::buffer::row::Row;
 
 /// Defines a text buffer we manipulate
 /// during edit mode
+#[derive(Debug)]
 pub struct Buffer {
     /// Buffer text
     text: Vec<Row>,
@@ -56,12 +59,16 @@ impl Buffer {
                         // Getting new row with range
                         row.range(start, end)
                     } else {
-                        panic!("columns offset >= row `{}` len", row.idx())
+                        panic!("columns offset ({}) >= row len ({})", offset.0, row.len())
                     }
                 })
                 .collect()
         } else {
-            panic!("rows offset >= rows amount")
+            panic!(
+                "rows offset ({}) >= rows amount ({})",
+                offset.1,
+                self.text.len()
+            )
         }
     }
 
