@@ -2,7 +2,8 @@ use std::io;
 
 use crate::{
     app::{App, Mode},
-    widgets::prepare::Prepare,
+    buffer::Buffer,
+    widgets::{editor::Editor, prepare::Prepare},
 };
 
 mod app;
@@ -11,5 +12,11 @@ mod events;
 mod widgets;
 
 fn main() -> io::Result<()> {
-    ratatui::run(|terminal| App::new(Mode::Prepare(Prepare::new())).run(terminal))
+    ratatui::run(|terminal| {
+        App::new(Mode::Edit(Editor::new(Buffer::new(
+            "a\nb\nc".into(),
+            "hello.gk".into(),
+        ))))
+        .run(terminal)
+    })
 }
