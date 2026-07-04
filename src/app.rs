@@ -1,51 +1,55 @@
-use std::io;
-
-use ratatui::{
-    DefaultTerminal, Frame,
-    layout::{Constraint, Direction, Layout, Rect},
-    widgets::Widget,
-};
-
+/// Imports
 use crate::{
     buffer::Buffer,
+    config::Config,
     events::message::Message,
     widgets::{editor::Editor, prepare::Prepare},
 };
+use ratatui::{DefaultTerminal, Frame};
+use std::io;
 
 /// Defines an applicatiob mode
-pub enum Mode {
+pub enum Mode<'m> {
     /// Prepare to open file mode
-    Prepare(Prepare),
+    Prepare(Prepare<'m>),
 
     /// Edit mode
-    Edit(Editor),
+    Edit(Editor<'m>),
 }
 
 /// Defines an application widget,
 /// a container that holds title, editor and command bar.
-pub struct App {
+pub struct App<'m> {
     /// Is app exited?
     exit: bool,
 
     /// App mode
-    mode: Mode,
+    mode: Mode<'m>,
+
+    /// App config
+    config: &'m Config,
 }
 
 /// App implementation
-impl App {
+impl<'m> App<'m> {
     /// Creates new application
-    pub fn new(mode: Mode) -> Self {
-        Self { exit: false, mode }
+    pub fn new(mode: Mode<'m>, config: &'m Config) -> Self {
+        Self {
+            exit: false,
+            mode,
+            config,
+        }
     }
 
     /// Opens prepare widget
-    pub fn prepare(&mut self) {
-        self.mode = Mode::Prepare(Prepare::new());
+    pub fn prepare(&'m mut self) {
+        self.mode = Mode::Prepare(Prepare::new(&self.config.theme.prepare));
     }
 
     /// Opens buffer for edit and enters edit mode
-    pub fn edit(&mut self, buf: Buffer) {
-        self.mode = Mode::Edit(Editor::new(buf));
+    /// with specified status in bar
+    pub fn edit(&'m mut self, buf: Buffer, status: &str) {
+        self.mode = Mode::Edit(Editor::new(buf, status, &self.config.theme.edit));
     }
 
     /// Runs the application's main loop until the user quits

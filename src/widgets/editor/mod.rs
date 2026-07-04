@@ -1,9 +1,15 @@
+/// Modules
+mod bar;
+
 /// Imports
-use crate::{buffer::Buffer, events::message::Message};
+use crate::{
+    buffer::Buffer,
+    config::theme::EditTheme,
+    events::message::Message,
+    widgets::editor::bar::{Bar, StatusBar},
+};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
-    style::Style,
-    text::Text,
     widgets::{Block, Paragraph, Widget},
 };
 use std::io;
@@ -41,35 +47,48 @@ impl Cursor {
 }
 
 /// Defines an editor widget
-pub struct Editor {
+pub struct Editor<'t> {
     /// Buffer being edit
     buf: Buffer,
 
     /// Editor cursor
     cursor: Cursor,
 
+    /// Editor bottom bar
+    bar: Bar<'t>,
+
     /// Render offset
     offset: (usize, usize),
+
+    // Theme reference
+    theme: &'t EditTheme,
 }
 
-/// Implementation of editor
-impl Editor {
+/// Implementation of editorstatus
+impl<'t> Editor<'t> {
     /// Creates new editor
-    pub fn new(buf: Buffer) -> Self {
+    pub fn new(buf: Buffer, status: &str, theme: &'t EditTheme) -> Self {
         Self {
             buf,
             cursor: Cursor::new(0, 0),
+            bar: Bar::Status(StatusBar::new(&theme.status_bar_theme, status.to_string())),
             offset: (0, 0),
+            theme,
         }
+    }
+
+    /// Sets bar to specified one
+    pub fn set_bar(&mut self, bar: Bar<'t>) {
+        self.bar = bar;
     }
 
     /// Renders text area
     fn render_text_area(&self, width: u16, height: u16) -> String {
         // Preparing render buffer
-        let mut render_buf = String::new();
+        let render_buf = String::new();
 
         // Getting rows by offset, width an height
-        let rows = self.buf.rows(self.offset, width as usize, height as usize);
+        let _rows = self.buf.rows(self.offset, width as usize, height as usize);
 
         render_buf
     }
@@ -81,7 +100,7 @@ impl Editor {
 }
 
 /// Widget implementation
-impl Widget for &mut Editor {
+impl<'t> Widget for &mut Editor<'t> {
     fn render(self, area: ratatui::prelude::Rect, buf: &mut ratatui::prelude::Buffer)
     where
         Self: Sized,
@@ -95,17 +114,16 @@ impl Widget for &mut Editor {
 
         // Rendering code widget
         Paragraph::new(self.render_text_area(layout[0].width, layout[0].height))
+            .style(self.theme.code_widget_theme.style)
             .block(
                 Block::bordered()
-                    .border_style(Style::new().cyan())
+                    .style(self.theme.code_widget_theme.block_style)
+                    .border_style(self.theme.code_widget_theme.block_border_style)
                     .title(self.buf.file_name()),
             )
             .render(layout[0], buf);
 
-        // Rendering action bar
-        Paragraph::new("File ready for edit")
-            .block(Block::bordered().border_style(Style::new().cyan()))
-            .centered()
-            .render(layout[1], buf);
+        // Rendering bar
+        self.bar.render(layout[1], buf);
     }
 }

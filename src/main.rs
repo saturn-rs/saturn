@@ -1,22 +1,30 @@
-use std::io;
-
 use crate::{
     app::{App, Mode},
     buffer::Buffer,
-    widgets::{editor::Editor, prepare::Prepare},
+    config::read_config,
+    widgets::editor::Editor,
 };
+use miette::IntoDiagnostic;
 
 mod app;
 mod buffer;
+mod config;
 mod events;
+mod io;
 mod widgets;
 
-fn main() -> io::Result<()> {
+fn main() -> miette::Result<()> {
+    let config = read_config()?;
     ratatui::run(|terminal| {
-        App::new(Mode::Edit(Editor::new(Buffer::new(
-            "a\nb\nc".into(),
-            "hello.gk".into(),
-        ))))
+        App::new(
+            Mode::Edit(Editor::new(
+                Buffer::new("a\nb\nc".into(), "hello.gk".into()),
+                "Ready for edit",
+                &config.theme.edit,
+            )),
+            &config,
+        )
         .run(terminal)
     })
+    .into_diagnostic()
 }
