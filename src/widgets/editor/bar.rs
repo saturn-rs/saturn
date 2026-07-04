@@ -1,6 +1,5 @@
-use ratatui::widgets::{Block, Paragraph, Widget};
-
 use crate::config::theme::StatusBarTheme;
+use ratatui::widgets::{Block, Paragraph, Widget};
 
 /// Defines status bar
 pub struct StatusBar<'t> {

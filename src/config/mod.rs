@@ -1,7 +1,6 @@
 /// Modules
 pub mod theme;
 
-
 /// Imports
 use crate::{
     config::theme::{
@@ -61,7 +60,7 @@ pub fn default_config() -> Config {
 }
 
 /// Reads config file if it exists,
-/// and creates new default one if not
+/// and creates default one if it not
 pub fn read_config() -> miette::Result<Config> {
     // Getting config path
     let path = io::config_path()?.join("saturn/config.toml");

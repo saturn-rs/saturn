@@ -6,7 +6,7 @@ use crate::{
 };
 use miette::IntoDiagnostic;
 
-mod app;
+pub mod app;
 mod buffer;
 mod config;
 mod events;
