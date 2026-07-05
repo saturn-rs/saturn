@@ -1,11 +1,12 @@
 /// Imports
+use crate::app::{Error, Result};
+use crate::io::IoError;
 use crate::{config::theme::PrepareTheme, events::message::Message};
 use ratatui::{
     crossterm::event::{self, Event, KeyCode, KeyEvent},
     style::Styled,
     widgets::{Block, List, ListState, StatefulWidget, Widget},
 };
-use std::io;
 
 /// Defines prepare widget
 pub struct Prepare<'t> {
@@ -29,7 +30,7 @@ impl<'t> Prepare<'t> {
     }
 
     /// Handles select event
-    fn handle_select_event(&mut self) -> io::Result<Message> {
+    fn handle_select_event(&mut self) -> Result<Message> {
         // Matching state
         match self.state.selected() {
             // Second option
@@ -40,7 +41,7 @@ impl<'t> Prepare<'t> {
     }
 
     /// Handles key event
-    fn handle_key_event(&mut self, event: KeyEvent) -> io::Result<Message> {
+    fn handle_key_event(&mut self, event: KeyEvent) -> Result<Message> {
         // Matching key code
         match event.code {
             // Quit event
@@ -63,13 +64,19 @@ impl<'t> Prepare<'t> {
     }
 
     /// Handles events
-    pub fn handle_events(&mut self) -> io::Result<Message> {
-        // Matching events
-        match event::read()? {
-            // Handling key event
-            Event::Key(event) => self.handle_key_event(event),
-            // Ignoring any other
-            _ => Ok(Message::None),
+    pub fn handle_events(&mut self) -> Result<Message> {
+        // Matching events read result
+        match event::read() {
+            // If ok, matching event
+            Ok(event) => match event {
+                // Handling key event
+                Event::Key(event) => self.handle_key_event(event),
+
+                // Ignoring any other
+                _ => Ok(Message::None),
+            },
+            // Handling error
+            Err(err) => Err(Error::IO(IoError::Unknown(err))),
         }
     }
 }

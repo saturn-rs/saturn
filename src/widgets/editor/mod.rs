@@ -2,6 +2,7 @@
 mod bar;
 
 /// Imports
+use crate::app::Result;
 use crate::{
     buffer::Buffer,
     config::theme::EditTheme,
@@ -12,7 +13,6 @@ use ratatui::{
     layout::{Constraint, Direction, Layout},
     widgets::{Block, Paragraph, Widget},
 };
-use std::io;
 
 /// Defines editor cursor
 pub struct Cursor {
@@ -94,7 +94,7 @@ impl<'t> Editor<'t> {
     }
 
     /// Handles events
-    pub fn handle_events(&mut self) -> io::Result<Message> {
+    pub fn handle_events(&mut self) -> Result<Message> {
         Ok(Message::None)
     }
 }

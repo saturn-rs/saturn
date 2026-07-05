@@ -3,12 +3,12 @@ use crate::{
     buffer::Buffer,
     config::Config,
     events::message::Message,
+    io::{self, IoError},
     widgets::{editor::Editor, prepare::Prepare},
 };
 use ratatui::{DefaultTerminal, Frame};
-use std::io;
 
-/// Defines an applicatiob mode
+/// Defines an application mode
 pub enum Mode<'m> {
     /// Prepare to open file mode
     Prepare(Prepare<'m>),
@@ -16,6 +16,20 @@ pub enum Mode<'m> {
     /// Edit mode
     Edit(Editor<'m>),
 }
+
+/// Defines an application error
+#[derive(thiserror::Error, Debug)]
+pub enum Error {
+    #[error(transparent)]
+    IO(#[from] io::IoError),
+    #[error(transparent)]
+    Ser(#[from] toml::ser::Error),
+    #[error(transparent)]
+    De(#[from] toml::de::Error),
+}
+
+/// Defines an application result
+pub type Result<T> = core::result::Result<T, Error>;
 
 /// Defines an application widget,
 /// a container that holds title, editor and command bar.
@@ -53,11 +67,14 @@ impl<'m> App<'m> {
     }
 
     /// Runs the application's main loop until the user quits
-    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> io::Result<()> {
+    pub fn run(&mut self, terminal: &mut DefaultTerminal) -> Result<()> {
         // While app is not exit
         while !self.exit {
             // Drawing widget depending on mode
-            terminal.draw(|frame| self.draw(frame))?;
+            terminal
+                .draw(|frame| self.draw(frame))
+                .map_err(IoError::Unknown)
+                .map_err(Error::IO)?;
             // Handling events
             let message = self.handle_events()?;
             // Handling message
@@ -76,7 +93,7 @@ impl<'m> App<'m> {
     }
 
     /// Handles all the app events depending on mode
-    pub fn handle_events(&mut self) -> io::Result<Message> {
+    pub fn handle_events(&mut self) -> Result<Message> {
         // Handling events by mode
         match &mut self.mode {
             Mode::Prepare(prepare) => prepare.handle_events(),

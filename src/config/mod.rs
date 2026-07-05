@@ -3,13 +3,13 @@ pub mod theme;
 
 /// Imports
 use crate::{
+    app::Result,
     config::theme::{
         CodeWidgetTheme, CommandBarTheme, EditTheme, OptionsTheme, PrepareTheme, StatusBarTheme,
         Theme,
     },
     io,
 };
-use miette::IntoDiagnostic;
 use ratatui::style::Style;
 use serde::{Deserialize, Serialize};
 
@@ -61,23 +61,24 @@ pub fn default_config() -> Config {
 
 /// Reads config file if it exists,
 /// and creates default one if it not
-pub fn read_config() -> miette::Result<Config> {
+pub fn read_config() -> Result<Config> {
     // Getting config path
     let path = io::config_path()?.join("saturn/config.toml");
 
     // If path exists
     if path.exists() {
         // Reading and parsing cconfig
-        let text = io::read_file(path)?;
-        let config = toml::from_str(&text).into_diagnostic()?;
+        let text = io::read_file(&path)?;
+        let config = toml::from_str(&text)?;
         Ok(config)
     }
     // If not
     else {
         // Creating new default one
-        io::create_dir(path.parent().unwrap())?;
+        let dir = io::parent(&path)?;
+        io::create_dir(dir)?;
         let config = default_config();
-        let text = toml::to_string(&config).into_diagnostic()?;
+        let text = toml::to_string(&config)?;
         io::write_file(path, text)?;
         Ok(config)
     }
