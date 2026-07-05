@@ -7,6 +7,7 @@ use crate::{
     widgets::{editor::Editor, prepare::Prepare},
 };
 use ratatui::{DefaultTerminal, Frame};
+use thiserror::Error;
 
 /// Defines an application mode
 pub enum Mode<'m> {
@@ -18,7 +19,7 @@ pub enum Mode<'m> {
 }
 
 /// Defines an application error
-#[derive(thiserror::Error, Debug)]
+#[derive(Error, Debug)]
 pub enum Error {
     #[error(transparent)]
     IO(#[from] io::IoError),
