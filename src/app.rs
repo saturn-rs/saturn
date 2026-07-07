@@ -10,12 +10,12 @@ use ratatui::{DefaultTerminal, Frame};
 use thiserror::Error;
 
 /// Defines an application mode
-pub enum Mode<'m> {
+pub enum Mode<'a> {
     /// Prepare to open file mode
-    Prepare(Prepare<'m>),
+    Prepare(Prepare<'a>),
 
     /// Edit mode
-    Edit(Editor<'m>),
+    Edit(Editor<'a>),
 }
 
 /// Defines an application error
@@ -34,21 +34,21 @@ pub type Result<T> = core::result::Result<T, Error>;
 
 /// Defines an application widget,
 /// a container that holds title, editor and command bar.
-pub struct App<'m> {
+pub struct App<'a> {
     /// Is app exited?
     exit: bool,
 
     /// App mode
-    mode: Mode<'m>,
+    mode: Mode<'a>,
 
     /// App config
-    config: &'m Config,
+    config: &'a Config,
 }
 
 /// App implementation
-impl<'m> App<'m> {
+impl<'a> App<'a> {
     /// Creates new application
-    pub fn new(mode: Mode<'m>, config: &'m Config) -> Self {
+    pub fn new(mode: Mode<'a>, config: &'a Config) -> Self {
         Self {
             exit: false,
             mode,
@@ -56,14 +56,14 @@ impl<'m> App<'m> {
         }
     }
 
-    /// Opens prepare widget
-    pub fn prepare(&'m mut self) {
+    /// Enters prepare mode and opens prepare widget
+    pub fn prepare(&'a mut self) {
         self.mode = Mode::Prepare(Prepare::new(&self.config.theme.prepare));
     }
 
     /// Opens buffer for edit and enters edit mode
     /// with specified status in bar
-    pub fn edit(&'m mut self, buf: Buffer, status: &str) {
+    pub fn edit(&'a mut self, buf: Buffer, status: &str) {
         self.mode = Mode::Edit(Editor::new(buf, status, &self.config.theme.edit));
     }
 
@@ -93,7 +93,7 @@ impl<'m> App<'m> {
         }
     }
 
-    /// Handles all the app events depending on mode
+    /// Handles all the ratatui events depending on mode
     pub fn handle_events(&mut self) -> Result<Message> {
         // Handling events by mode
         match &mut self.mode {
@@ -104,12 +104,20 @@ impl<'m> App<'m> {
 
     /// Handles a message
     fn handle_message(&mut self, message: Message) {
-        // Matching a message
+        // Handling message
         match message {
             // Doing nothing
             Message::None => {}
-            // Setting `exit` to true
+
+            // Quiting app
             Message::Quit => self.exit = true,
+
+            // Handling many messages
+            Message::Many(messages) => {
+                for message in messages.into_iter().rev() {
+                    self.handle_message(message);
+                }
+            }
         }
     }
 }

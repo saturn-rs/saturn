@@ -1,8 +1,15 @@
-/// Definess a message an app can handle
+/// Imports
+use std::collections::VecDeque;
+
+/// Defines a message an app can handle
+#[derive(Clone)]
 pub enum Message {
-    /// Does nothing
+    /// Do nothing
     None,
 
-    /// Quits app
+    /// Quit app
     Quit,
+
+    /// Many messages
+    Many(Vec<Message>),
 }

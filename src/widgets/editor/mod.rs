@@ -2,13 +2,16 @@
 mod bar;
 
 /// Imports
-use crate::app::Result;
+use crate::app::{Error, Result};
+use crate::events::hooks::EventBus;
+use crate::io::IoError;
 use crate::{
     buffer::Buffer,
     config::theme::EditTheme,
     events::message::Message,
     widgets::editor::bar::{Bar, StatusBar},
 };
+use ratatui::crossterm::event::{self};
 use ratatui::{
     layout::{Constraint, Direction, Layout},
     widgets::{Block, Paragraph, Widget},
@@ -62,6 +65,9 @@ pub struct Editor<'t> {
 
     // Theme reference
     theme: &'t EditTheme,
+
+    // Editor event bus
+    event_bus: EventBus,
 }
 
 /// Implementation of editorstatus
@@ -74,6 +80,7 @@ impl<'t> Editor<'t> {
             bar: Bar::Status(StatusBar::new(&theme.status_bar_theme, status.to_string())),
             offset: (0, 0),
             theme,
+            event_bus: EventBus::new(),
         }
     }
 
@@ -93,9 +100,15 @@ impl<'t> Editor<'t> {
         render_buf
     }
 
-    /// Handles events
+    /// Handles all the ratatui events
     pub fn handle_events(&mut self) -> Result<Message> {
-        Ok(Message::None)
+        // Matching events read result
+        match event::read() {
+            // If ok, matching event
+            Ok(_) => Ok(Message::None), // todo: handle events
+            // Handling error
+            Err(err) => Err(Error::IO(IoError::Unknown(err))),
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 /// Imports
 use crate::app::{Error, Result};
+use crate::events::hooks::{EventBus, EventId};
 use crate::io::IoError;
 use crate::{config::theme::PrepareTheme, events::message::Message};
 use ratatui::{
@@ -8,13 +9,25 @@ use ratatui::{
     widgets::{Block, List, ListState, StatefulWidget, Widget},
 };
 
-/// Defines prepare widget
+/// Defines prepare mode events
+pub struct PrepareEvents {
+    // On option switch event
+    on_option_switch: EventId,
+}
+
+/// Defines prepare mode and widget
 pub struct Prepare<'t> {
     // List state
     state: ListState,
 
     // Theme reference
     theme: &'t PrepareTheme,
+
+    // Prepare events
+    events: PrepareEvents,
+
+    // Prepare event bus
+    event_bus: EventBus,
 }
 
 /// Prepare widget implementation
@@ -25,8 +38,19 @@ impl<'t> Prepare<'t> {
         let mut state = ListState::default();
         state.select_first();
 
+        // Preparing events
+        let mut event_bus = EventBus::new();
+        let events = PrepareEvents {
+            on_option_switch: event_bus.register(),
+        };
+
         // Done!
-        Self { state, theme }
+        Self {
+            state,
+            theme,
+            events,
+            event_bus,
+        }
     }
 
     /// Handles select event
@@ -49,12 +73,16 @@ impl<'t> Prepare<'t> {
             // Select previous event
             KeyCode::Up => {
                 self.state.select_previous();
-                Ok(Message::None)
+                Ok(Message::Many(
+                    self.event_bus.fire(self.events.on_option_switch),
+                ))
             }
             // Select next event
             KeyCode::Down => {
                 self.state.select_next();
-                Ok(Message::None)
+                Ok(Message::Many(
+                    self.event_bus.fire(self.events.on_option_switch),
+                ))
             }
             // Select key
             KeyCode::Enter => self.handle_select_event(),
@@ -63,7 +91,7 @@ impl<'t> Prepare<'t> {
         }
     }
 
-    /// Handles events
+    /// Handles all the ratatui events
     pub fn handle_events(&mut self) -> Result<Message> {
         // Matching events read result
         match event::read() {
@@ -71,7 +99,6 @@ impl<'t> Prepare<'t> {
             Ok(event) => match event {
                 // Handling key event
                 Event::Key(event) => self.handle_key_event(event),
-
                 // Ignoring any other
                 _ => Ok(Message::None),
             },
