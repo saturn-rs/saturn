@@ -2,7 +2,7 @@
 use crate::{
     buffer::Buffer,
     config::Config,
-    events::message::Message,
+    events::{EventBus, message::Message},
     io::{self, IoError},
     widgets::{editor::Editor, prepare::Prepare},
 };
@@ -43,6 +43,9 @@ pub struct App<'a> {
 
     /// App config
     config: &'a Config,
+
+    /// Saturn's event bus
+    pub event_bus: EventBus,
 }
 
 /// App implementation
@@ -53,6 +56,7 @@ impl<'a> App<'a> {
             exit: false,
             mode,
             config,
+            event_bus: EventBus::new(),
         }
     }
 
@@ -111,6 +115,13 @@ impl<'a> App<'a> {
 
             // Quiting app
             Message::Quit => self.exit = true,
+
+            // Firing an event
+            Message::Fire(event) => {
+                for message in self.event_bus.fire(event) {
+                    self.handle_message(message);
+                }
+            }
 
             // Handling many messages
             Message::Many(messages) => {

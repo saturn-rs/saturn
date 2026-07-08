@@ -3,7 +3,6 @@ mod bar;
 
 /// Imports
 use crate::app::{Error, Result};
-use crate::events::hooks::EventBus;
 use crate::io::IoError;
 use crate::{
     buffer::Buffer,
@@ -65,9 +64,6 @@ pub struct Editor<'t> {
 
     // Theme reference
     theme: &'t EditTheme,
-
-    // Editor event bus
-    event_bus: EventBus,
 }
 
 /// Implementation of editorstatus
@@ -80,7 +76,6 @@ impl<'t> Editor<'t> {
             bar: Bar::Status(StatusBar::new(&theme.status_bar_theme, status.to_string())),
             offset: (0, 0),
             theme,
-            event_bus: EventBus::new(),
         }
     }
 

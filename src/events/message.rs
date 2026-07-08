@@ -1,5 +1,5 @@
 /// Imports
-use std::collections::VecDeque;
+use crate::events::Event;
 
 /// Defines a message an app can handle
 #[derive(Clone)]
@@ -9,6 +9,9 @@ pub enum Message {
 
     /// Quit app
     Quit,
+
+    /// Fire an event
+    Fire(Event),
 
     /// Many messages
     Many(Vec<Message>),
