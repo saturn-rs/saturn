@@ -11,7 +11,7 @@ pub enum Event {
     PrepareOptionSwitch,
 }
 
-/// Defines a hook in event system
+/// Defines an event hook
 pub type Hook = Box<dyn Fn(Event) -> Message>;
 
 /// Defines an event bus
