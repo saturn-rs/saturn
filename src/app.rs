@@ -4,9 +4,11 @@ use crate::{
     config::Config,
     events::{EventBus, message::Message},
     io::{self, IoError},
+    plugin::Plugin,
     widgets::{editor::Editor, prepare::Prepare},
 };
 use ratatui::{DefaultTerminal, Frame};
+use std::rc::Rc;
 use thiserror::Error;
 
 /// Defines an application mode
@@ -44,6 +46,9 @@ pub struct App<'a> {
     /// App config
     config: &'a Config,
 
+    /// Active plugins
+    plugins: Vec<Rc<dyn Plugin>>,
+
     /// Saturn's event bus
     pub event_bus: EventBus,
 }
@@ -51,24 +56,67 @@ pub struct App<'a> {
 /// App implementation
 impl<'a> App<'a> {
     /// Creates new application
-    pub fn new(mode: Mode<'a>, config: &'a Config) -> Self {
-        Self {
+    pub fn new(mut mode: Mode<'a>, config: &'a Config) -> Self {
+        // Initializing mode
+        let message = match &mut mode {
+            Mode::Prepare(prepare) => prepare.init(),
+            Mode::Edit(editor) => editor.init(),
+        };
+
+        // Preparing app
+        let mut app = Self {
             exit: false,
             mode,
             config,
+            plugins: Vec::new(),
             event_bus: EventBus::new(),
-        }
+        };
+
+        // Handling mode init message
+        app.handle_message(message);
+
+        // Done!
+        app
+    }
+
+    /// Adds a new plugin to active plugins vec
+    pub fn with_plugin(mut self, plugin: Rc<dyn Plugin>) -> Self {
+        // Pushing plugin to active plugins vec
+        self.plugins.push(plugin.clone());
+
+        // Initializing plugin
+        let message = plugin.init(&mut self.event_bus);
+        self.handle_message(message);
+
+        // Returning self
+        self
     }
 
     /// Enters prepare mode and opens prepare widget
     pub fn prepare(&'a mut self) {
-        self.mode = Mode::Prepare(Prepare::new(&self.config.theme.prepare));
+        // Preparing and initializing mode
+        let mut prepare = Prepare::new(&self.config.theme.prepare);
+        let message = prepare.init();
+
+        // Handling init message
+        self.handle_message(message);
+
+        // Setting mode to prepare
+        self.mode = Mode::Prepare(prepare);
     }
 
     /// Opens buffer for edit and enters edit mode
     /// with specified status in bar
     pub fn edit(&'a mut self, buf: Buffer, status: &str) {
-        self.mode = Mode::Edit(Editor::new(buf, status, &self.config.theme.edit));
+        // Preparing and initializing mode
+        let mut editor = Editor::new(buf, status, &self.config.theme.edit);
+        let message = editor.init();
+
+        // Handling init message
+        self.handle_message(message);
+
+        // Setting mode to edit
+        self.mode = Mode::Edit(editor);
     }
 
     /// Runs the application's main loop until the user quits
@@ -129,6 +177,19 @@ impl<'a> App<'a> {
                     self.handle_message(message);
                 }
             }
+        }
+    }
+}
+
+/// Drop implementation for App
+impl<'a> Drop for App<'a> {
+    // On drop
+    fn drop(&mut self) {
+        // Deinitializing plugins
+        for plugin in std::mem::take(&mut self.plugins) {
+            // Deinitializing plugin
+            let message = plugin.deinit(&mut self.event_bus);
+            self.handle_message(message);
         }
     }
 }

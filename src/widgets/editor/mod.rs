@@ -3,6 +3,7 @@ mod bar;
 
 /// Imports
 use crate::app::{Error, Result};
+use crate::events::Event;
 use crate::io::IoError;
 use crate::{
     buffer::Buffer,
@@ -77,6 +78,11 @@ impl<'t> Editor<'t> {
             offset: (0, 0),
             theme,
         }
+    }
+
+    /// Initializes mode, returns init message
+    pub fn init(&mut self) -> Message {
+        Message::Fire(Event::EnterEditMode)
     }
 
     /// Sets bar to specified one

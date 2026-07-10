@@ -1,17 +1,10 @@
-use crate::{
+use miette::IntoDiagnostic;
+use saturn::{
     app::{App, Mode},
     buffer::Buffer,
     config::read_config,
     widgets::editor::Editor,
 };
-use miette::IntoDiagnostic;
-
-pub mod app;
-mod buffer;
-mod config;
-mod events;
-mod io;
-mod widgets;
 
 fn main() -> miette::Result<()> {
     let config = read_config().into_diagnostic()?;

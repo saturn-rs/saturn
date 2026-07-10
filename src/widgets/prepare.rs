@@ -30,6 +30,11 @@ impl<'t> Prepare<'t> {
         Self { state, theme }
     }
 
+    /// Initializes mode, returns init message
+    pub fn init(&mut self) -> Message {
+        Message::Fire(Event::EnterPrepareMode)
+    }
+
     /// Handles select event
     fn handle_select_event(&mut self) -> Result<Message> {
         // Matching state

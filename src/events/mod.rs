@@ -9,6 +9,8 @@ use std::collections::HashMap;
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum Event {
     PrepareOptionSwitch,
+    EnterPrepareMode,
+    EnterEditMode,
 }
 
 /// Defines an event hook
