@@ -11,7 +11,10 @@ fn main() -> miette::Result<()> {
     ratatui::run(|terminal| {
         App::new(
             Mode::Edit(Editor::new(
-                Buffer::new("a\nb\nc".into(), "hello.gk".into()),
+                Buffer::new(
+                    "abbbbb\nb\nc\nd\ne\nf\ng\nh\nj\nk\nm\nl\no\np".into(),
+                    "hello.gk".into(),
+                ),
                 "Ready for edit",
                 &config.theme.edit,
             )),

@@ -51,6 +51,9 @@ pub struct CodeWidgetTheme {
 
     /// Code widget style
     pub style: Style,
+
+    /// Cursor style
+    pub cursor_style: Style,
 }
 
 /// Command bar theme

@@ -8,9 +8,18 @@ use std::collections::HashMap;
 /// Defines an event
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum Event {
+    /// Or option switch in prepare mode
     PrepareOptionSwitch,
+
+    /// On enter prepare mode
     EnterPrepareMode,
+
+    /// On enter edit mode
     EnterEditMode,
+
+    /// On cursor move in edit mode
+    /// (contains delta row and column)
+    CursorMove(isize, isize),
 }
 
 /// Defines an event hook

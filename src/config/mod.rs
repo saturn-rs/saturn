@@ -10,7 +10,7 @@ use crate::{
     },
     io,
 };
-use ratatui::style::Style;
+use ratatui::style::{Modifier, Style};
 use serde::{Deserialize, Serialize};
 
 /// 🪐 Defines Saturn's configuration
@@ -42,6 +42,7 @@ pub fn default_config() -> Config {
                     block_style: Style::new(),
                     block_border_style: Style::new().cyan(),
                     style: Style::new(),
+                    cursor_style: Style::default().add_modifier(Modifier::REVERSED),
                 },
                 command_bar_theme: CommandBarTheme {
                     block_style: Style::new(),

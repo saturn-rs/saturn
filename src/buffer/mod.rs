@@ -72,6 +72,11 @@ impl Buffer {
         }
     }
 
+    /// Returns rows amount
+    pub fn rows_amount(&self) -> usize {
+        self.text.len()
+    }
+
     /// Returns row by row index
     pub fn row(&self, idx: usize) -> &Row {
         // Validating row index
